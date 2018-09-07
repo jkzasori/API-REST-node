@@ -1,19 +1,22 @@
+// dependencies
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const mongoose = require('mongoose');
 
+//routes 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var petRouter = require('./routes/petRouter');
-var providerRouter = require('./routes/providerRouter');
 
-const mongoose = require('mongoose');
+
 
 // const Pets = require('./models/pets');
 // const Providers = require('./models/Providers');
 
+//Here a connection is created  to the server
 const url = 'mongodb://tamara:tamara321@ds125578.mlab.com:25578/test1';
 const connect = mongoose.connect(url, {useNewUrlParser: true});
 
@@ -37,8 +40,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/pets', petRouter);
-app.use('/providers', providerRouter);
-// app.use('/providers', providerRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
