@@ -54,9 +54,16 @@ petRouter.route('/:petId')
 .get((req, res, next) => {
 	Pets.findById(req.params.petId)
 	.then((pet) => {
+		if (pet != null) {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'application/json');
 		res.json(pet);
+		}
+		else{
+			err = new Error('Pet ' + req.params.petId + ' not found');
+			err.status = 404;
+			return next(err);
+		}
 	}, (err) => next(err))
 	.catch((err) => next(err));
 })
@@ -147,6 +154,83 @@ petRouter.route('/:petId/comments')
 			return next(err);
 		}
 	}, (err => next(err)))
+	.catch((err) => next(err));
+});
+//here was established the route for specific comment of pet
+petRouter.route('/:petId/comments/:commentId')
+.get((req, res, next) => {
+	Pets.findById(req.params.petId)
+	.then((pet) => {
+		if (pet != null && pet.comments.id(req.params.commentId) != null) {
+			res.statusCode = 200;
+			res.setHeader('Content-Type', 'application/json');
+			res.json(pet.comments.id(req.params.commentId));
+		}else if(pet == null){
+			err = new Error('Pet ' + req.params.petId + ' not found');
+			err.status = 400;
+			return next(err);
+		}else {
+			err = new Error('Comment ' + req.params.commentId + ' not found');
+			err.status = 400;
+			return next(err);
+		}
+	}, (err) => next(err))
+	.catch((err) => next(err));
+})
+.post((req, res, next) => {
+	res.statusCode = 403;
+	res.end("Post operation isn't supported on /pets/" +
+		req.params.petId + '/comments/'+req.params.commentId);
+})
+.put((req, res, next) => {
+	Pets.findById(req.params.petId)
+	.then((pet) => {
+		if (pet != null && pet.comments.id(req.params.commentId) != null) {
+			if (req.body.rating) {
+				pet.comments.id(req.params.commentId).rating = req.body.rating;
+			}
+			if (req.body.comment) {
+				pet.comments.id(req.params.commentId).comment =  req.body.comment;
+			}
+			pet.save()
+			.then((pet) => {
+				res.statusCode = 200;
+				res.setHeader('Content-Type', 'application/json');
+				res.json(pet);
+			}, (err) => next(err));
+		}else if(pet == null) {
+			err = new Error('Pet ' +req.params.petId + ' not found');
+			err.status = 404;
+			return next(err);
+		}else {
+			err = new Error('Comment ' + req.params.commentId + ' not found');
+			err.status = 404;
+			return next(err);
+		}
+	}, (err) => next(err))
+	.catch((err) => next(err));
+})
+.delete((req, res, next) => {
+	Pets.findById(req.params.petId)
+	.then((pet) => {
+		if (pet != null && pet.comments.id(req.params.commentId) != null) {
+			pet.comments.id(req.params.commentId).remove();
+			pet.save()
+			.then((pet) => {
+				res.statusCode = 200;
+				res.setHeader('Content-Type', 'application/json');
+				res.json(pet);
+			}, (err) => next(err));
+		} else if (pet == null) {
+			err = new Error('Pet ' + req.params.petId + ' not found');
+			err.status = 404;
+			return next(err);
+		}else {
+			err = new Error('Comment ' + req.params.commentId + ' not found');
+			err.status = 404;
+			return next(err);
+		}
+	}, (err) => next(err))
 	.catch((err) => next(err));
 });
 
